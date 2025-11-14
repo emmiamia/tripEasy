@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { TripWithRelations } from "@/lib/trips";
 import { FiCheck, FiPlus, FiTag } from "react-icons/fi";
 
@@ -14,6 +14,20 @@ export function TripPackingList({ tripId, items }: TripPackingListProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Essentials");
   const [loading, setLoading] = useState(false);
+  const categoryOptions = useMemo(
+    () => [
+      "Essentials",
+      "Clothing",
+      "Tech & Gadgets",
+      "Toiletries",
+      "Documents",
+      "Health & Wellness",
+      "Outdoor",
+      "Kids & Family",
+      "Miscellaneous"
+    ],
+    []
+  );
 
   const togglePacked = async (itemId: string, isPacked: boolean) => {
     setPackingItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, isPacked } : item)));
@@ -74,12 +88,17 @@ export function TripPackingList({ tripId, items }: TripPackingListProps) {
           placeholder="Travel adapter"
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-200"
         />
-        <input
+        <select
           value={category}
           onChange={(event) => setCategory(event.target.value)}
-          placeholder="Category"
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:border-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-200"
-        />
+        >
+          {categoryOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           disabled={loading}

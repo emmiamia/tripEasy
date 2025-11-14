@@ -23,10 +23,23 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json(companion);
   } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: error.message ?? "Unable to update companion" }, { status: 400 });
+    return NextResponse.json(
+      { error: error.message ?? "Unable to update companion" },
+      { status: 400 }
+    );
   }
 }
 
 export async function DELETE(_request: Request, { params }: Params) {
-  try {\n+    await prisma.travelCompanion.delete({ where: { id: params.companionId } });\n+    return NextResponse.json({ success: true });\n+  } catch (error: any) {\n+    console.error(error);\n+    return NextResponse.json({ error: error.message ?? \"Unable to delete companion\" }, { status: 400 });\n+  }\n+}\n*** End Patch
+  try {
+    await prisma.travelCompanion.delete({ where: { id: params.companionId } });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error(error);
+    return NextResponse.json(
+      { error: error.message ?? "Unable to delete companion" },
+      { status: 400 }
+    );
+  }
+}
 

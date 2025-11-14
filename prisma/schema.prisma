@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Trip {
+  id           String             @id @default(cuid())
+  name         String
+  destination  String
+  coverImage   String?
+  description  String?
+  startDate    DateTime
+  endDate      DateTime
+  currency     String             @default("USD")
+  travelStyle  String             @default("ADVENTURE")
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  days         TripDay[]
+  lodgings     Lodging[]
+  segments     TransportSegment[]
+  packingItems PackingItem[]
+  companions   TravelCompanion[]
+  tasks        TripTask[]
+  expenses     Expense[]
+  notes        TripNote[]
+}
+
+model TripDay {
+  id         String     @id @default(cuid())
+  date       DateTime
+  summary    String?
+  trip       Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId     String
+  activities Activity[]
+}
+
+model Activity {
+  id           String    @id @default(cuid())
+  title        String
+  subtitle     String?
+  startTime    DateTime?
+  endTime      DateTime?
+  locationCity String?
+  locationName String?
+  locationLat  Float?
+  locationLng  Float?
+  notes        String?
+  category     String    @default("OTHER")
+  cost         Float?
+  bookingLink  String?
+  day          TripDay   @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  dayId        String
+}
+
+model Lodging {
+  id                 String   @id @default(cuid())
+  name               String
+  address            String?
+  checkIn            DateTime
+  checkOut           DateTime
+  confirmationNumber String?
+  notes              String?
+  url                String?
+  trip               Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId             String
+}
+
+model TransportSegment {
+  id                 String   @id @default(cuid())
+  type               String
+  carrier            String?
+  confirmationNumber String?
+  departureCity      String
+  arrivalCity        String
+  departureTime      DateTime
+  arrivalTime        DateTime
+  seat               String?
+  trip               Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId             String
+}
+
+model PackingItem {
+  id       String  @id @default(cuid())
+  name     String
+  category String
+  quantity Int     @default(1)
+  isPacked Boolean @default(false)
+  trip     Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId   String
+}
+
+model TravelCompanion {
+  id     String  @id @default(cuid())
+  name   String
+  email  String?
+  status String  @default("confirmed")
+  trip   Trip    @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId String
+}
+
+model TripTask {
+  id         String    @id @default(cuid())
+  title      String
+  dueDate    DateTime?
+  isComplete Boolean   @default(false)
+  assignedTo String?
+  trip       Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId     String
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Float
+  currency    String   @default("USD")
+  date        DateTime
+  category    String   @default("MISC")
+  paidBy      String?
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId      String
+}
+
+model TripNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId    String
+}

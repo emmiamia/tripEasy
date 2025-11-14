@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #0f172a;
+}
+
+main {
+  min-height: calc(100vh - 64px);
+}
+
+.map-container {
+  height: 100%;
+  width: 100%;
+}

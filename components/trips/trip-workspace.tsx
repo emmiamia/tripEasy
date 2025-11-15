@@ -9,6 +9,7 @@ import { TripExpenseSummary } from "@/components/trips/trip-expense-summary";
 import { TripNotesPanel } from "@/components/trips/trip-notes-panel";
 import { TripLogisticsPanel } from "@/components/trips/trip-logistics-panel";
 import { TripMapPreview } from "@/components/maps/trip-map-preview";
+import { TripCollaboratorsPanel } from "@/components/trips/trip-collaborators-panel";
 import { FiUsers, FiMapPin } from "react-icons/fi";
 
 interface TripWorkspaceProps {
@@ -16,7 +17,7 @@ interface TripWorkspaceProps {
 }
 
 export function TripWorkspace({ summary }: TripWorkspaceProps) {
-  const { trip, dayCount, budget, upcomingTasks, mapPoints } = summary;
+  const { trip, dayCount, budget, upcomingTasks, mapPoints, currentRole } = summary;
 
   const heroImage =
     trip.coverImage && trip.coverImage.trim() !== ""
@@ -49,10 +50,10 @@ export function TripWorkspace({ summary }: TripWorkspaceProps) {
             </p>
           </div>
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Companions</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Collaborators</p>
             <div className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-900">
               <FiUsers className="h-4 w-4 text-brand-500" />
-              {trip.companions.length} travelers
+              {trip.members.length} members
             </div>
           </div>
           <div className="flex items-end justify-end">
@@ -83,6 +84,12 @@ export function TripWorkspace({ summary }: TripWorkspaceProps) {
           <TripTaskBoard tripId={trip.id} tasks={trip.tasks} upcoming={upcomingTasks} />
           <TripPackingList tripId={trip.id} items={trip.packingItems} />
           <TripExpenseSummary tripId={trip.id} expenses={trip.expenses} currency={trip.currency} />
+          <TripCollaboratorsPanel
+            tripId={trip.id}
+            members={trip.members}
+            invites={trip.invites}
+            currentRole={currentRole}
+          />
         </div>
       </section>
     </div>

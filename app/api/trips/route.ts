@@ -2,9 +2,20 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { tripSchema } from "@/lib/validation";
 import { addDays, parseISO } from "date-fns";
+import { auth } from "@/lib/auth";
 
 export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const trips = await prisma.trip.findMany({
+    where: {
+      members: {
+        some: { userId: session.user.id }
+      }
+    },
     include: {
       days: { include: { activities: true } },
       tasks: true,
@@ -19,6 +30,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const json = await request.json();
     const data = tripSchema.parse(json);
 
@@ -35,6 +51,13 @@ export async function POST(request: Request) {
         endDate,
         travelStyle: data.travelStyle as any,
         currency: data.currency,
+        createdById: session.user.id,
+        members: {
+          create: {
+            userId: session.user.id,
+            role: "OWNER"
+          }
+        },
         days: {
           create: Array.from({
             length: Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1)

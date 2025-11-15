@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getTrips } from "@/lib/trips";
+import { requireCurrentUser } from "@/lib/session";
 import { TripsTable } from "@/components/trips/trips-table";
 import { TripsTableSkeleton } from "@/components/trips/trips-table-skeleton";
 
@@ -21,6 +22,7 @@ export default function TripsPage() {
 }
 
 async function ResolvedTrips() {
-  const trips = await getTrips();
+  const user = await requireCurrentUser();
+  const trips = await getTrips(user.id);
   return <TripsTable trips={trips} />;
 }

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AppShell } from "@/components/common/app-shell";
+import { ClientSessionProvider } from "@/components/providers/session-provider";
 import 'leaflet/dist/leaflet.css';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn(inter.variable, "bg-slate-50")}> 
       <body className="font-sans antialiased">
-        <AppShell>{children}</AppShell>
+        <ClientSessionProvider>
+          <AppShell>{children}</AppShell>
+        </ClientSessionProvider>
       </body>
     </html>
   );

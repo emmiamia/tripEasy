@@ -1,6 +1,8 @@
 import { NewTripForm } from "@/components/trips/new-trip-form";
+import { requireCurrentUser } from "@/lib/session";
 
-export default function NewTripPage() {
+export default async function NewTripPage() {
+  await requireCurrentUser();
   return (
     <section className="mx-auto max-w-3xl space-y-8">
       <header className="space-y-2 text-center">

@@ -8,7 +8,10 @@ import type {
   PackingItem,
   TripTask,
   Expense,
-  TripNote
+  TripNote,
+  TripMember,
+  TripInvite,
+  User
 } from "@prisma/client";
 import { differenceInCalendarDays } from "date-fns";
 
@@ -21,6 +24,8 @@ export type TripWithRelations = Trip & {
   expenses: Expense[];
   notes: TripNote[];
   companions: { id: string; name: string; email: string | null; status: string }[];
+  members: (TripMember & { user: Pick<User, "id" | "name" | "email"> })[];
+  invites: TripInvite[];
 };
 
 export type TripWithMetrics = Trip & {
@@ -32,10 +37,16 @@ export type TripWithMetrics = Trip & {
   packedCount: number;
   taskCompletion: number;
   totalExpense: number;
+  memberCount: number;
 };
 
-export async function getTrips(): Promise<TripWithMetrics[]> {
+export async function getTrips(userId: string): Promise<TripWithMetrics[]> {
   const trips = await prisma.trip.findMany({
+    where: {
+      members: {
+        some: { userId }
+      }
+    },
     include: {
       days: {
         include: {
@@ -44,7 +55,8 @@ export async function getTrips(): Promise<TripWithMetrics[]> {
       },
       packingItems: true,
       tasks: true,
-      expenses: true
+      expenses: true,
+      members: true
     },
     orderBy: { startDate: "asc" }
   });
@@ -58,13 +70,19 @@ export async function getTrips(): Promise<TripWithMetrics[]> {
           (trip.tasks.filter((task) => task.isComplete).length / trip.tasks.length) * 100
         )
       : 0,
-    totalExpense: trip.expenses.reduce((acc, expense) => acc + expense.amount, 0)
+    totalExpense: trip.expenses.reduce((acc, expense) => acc + expense.amount, 0),
+    memberCount: trip.members.length
   }));
 }
 
-export async function getTripById(id: string): Promise<TripWithRelations | null> {
-  return prisma.trip.findUnique({
-    where: { id },
+export async function getTripById(userId: string, id: string): Promise<TripWithRelations | null> {
+  return prisma.trip.findFirst({
+    where: {
+      id,
+      members: {
+        some: { userId }
+      }
+    },
     include: {
       days: { include: { activities: true }, orderBy: { date: "asc" } },
       lodgings: { orderBy: { checkIn: "asc" } },
@@ -73,14 +91,29 @@ export async function getTripById(id: string): Promise<TripWithRelations | null>
       companions: { orderBy: { name: "asc" } },
       tasks: { orderBy: { dueDate: "asc" } },
       expenses: { orderBy: { date: "desc" } },
-      notes: { orderBy: { createdAt: "desc" } }
+      notes: { orderBy: { createdAt: "desc" } },
+      members: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
+          }
+        },
+        orderBy: { role: "asc" }
+      },
+      invites: { orderBy: { invitedAt: "desc" } }
     }
   });
 }
 
-export async function getTripSummary(id: string) {
-  const trip = await getTripById(id);
+export async function getTripSummary(userId: string, id: string) {
+  const trip = await getTripById(userId, id);
   if (!trip) return null;
+
+  const membership = trip.members.find((member) => member.userId === userId);
 
   const dayCount = differenceInCalendarDays(trip.endDate, trip.startDate) + 1;
   const budget = trip.expenses.reduce((acc, item) => acc + item.amount, 0);
@@ -106,7 +139,8 @@ export async function getTripSummary(id: string) {
         lng: activity.locationLng!,
         category: activity.category,
         day: trip.days.find((day) => day.id === activity.dayId)?.date
-      }))
+      })),
+    currentRole: membership?.role ?? "VIEWER"
   };
 }
 

@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import { getTrips } from "@/lib/trips";
+import { requireCurrentUser } from "@/lib/session";
 import { TripDashboardSkeleton } from "@/components/trips/trip-dashboard-skeleton";
 import { TripDashboard } from "@/components/trips/trip-dashboard";
 
 export default async function DashboardPage() {
-  const tripsPromise = getTrips();
+  const user = await requireCurrentUser();
+  const tripsPromise = getTrips(user.id);
 
   return (
     <section className="space-y-6">

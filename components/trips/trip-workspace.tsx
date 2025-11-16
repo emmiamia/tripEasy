@@ -11,6 +11,7 @@ import { TripLogisticsPanel } from "@/components/trips/trip-logistics-panel";
 import { TripMapPreview } from "@/components/maps/trip-map-preview";
 import { TripCollaboratorsPanel } from "@/components/trips/trip-collaborators-panel";
 import { FiUsers, FiMapPin } from "react-icons/fi";
+import { isAllowedRemoteImage } from "@/lib/utils";
 
 interface TripWorkspaceProps {
   summary: TripSummary;
@@ -19,10 +20,10 @@ interface TripWorkspaceProps {
 export function TripWorkspace({ summary }: TripWorkspaceProps) {
   const { trip, dayCount, budget, upcomingTasks, mapPoints, currentRole } = summary;
 
-  const heroImage =
-    trip.coverImage && trip.coverImage.trim() !== ""
-      ? trip.coverImage
-      : "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80";
+  const defaultHero =
+    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80";
+  const canUseCover = isAllowedRemoteImage(trip.coverImage ?? undefined);
+  const heroImage = canUseCover && trip.coverImage?.trim() ? trip.coverImage : defaultHero;
 
   return (
     <div className="space-y-10">
@@ -65,6 +66,11 @@ export function TripWorkspace({ summary }: TripWorkspaceProps) {
               Open map view
             </Link>
           </div>
+          {!canUseCover && trip.coverImage?.trim() && (
+            <div className="lg:col-span-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+              We couldn't display your cover image because its host isn't permitted. A default image is shown instead.
+            </div>
+          )}
         </div>
       </section>
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { tripSchema } from "@/lib/validation";
 import { addDays, parseISO } from "date-fns";
 import { auth } from "@/lib/auth";
+import { isAllowedRemoteImage } from "@/lib/utils";
 
 export async function GET() {
   const session = await auth();
@@ -41,12 +42,18 @@ export async function POST(request: Request) {
     const startDate = parseISO(data.startDate);
     const endDate = parseISO(data.endDate);
 
+    const coverImage =
+      data.coverImage?.trim() && isAllowedRemoteImage(data.coverImage.trim())
+        ? data.coverImage.trim()
+        : undefined;
+    const imageRejected = !!(data.coverImage?.trim() && !coverImage);
+
     const trip = await prisma.trip.create({
       data: {
         name: data.name,
         destination: data.destination,
         description: data.description ?? undefined,
-        coverImage: data.coverImage?.trim() ? data.coverImage.trim() : undefined,
+        coverImage,
         startDate,
         endDate,
         travelStyle: data.travelStyle as any,
@@ -68,7 +75,7 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json(trip, { status: 201 });
+    return NextResponse.json({ ...trip, imageRejected }, { status: 201 });
   } catch (error: any) {
     console.error(error);
     return NextResponse.json({ error: error.message ?? "Unable to create trip" }, { status: 400 });

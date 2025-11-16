@@ -48,6 +48,9 @@ export function NewTripForm() {
         throw new Error("Failed to create trip");
       }
       const trip = await response.json();
+      if (trip.imageRejected) {
+        alert("We couldn't use your image URL due to host restrictions. A default cover image was applied.");
+      }
       router.push(`/trips/${trip.id}`);
     } catch (error) {
       console.error(error);

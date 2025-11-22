@@ -68,7 +68,7 @@ export function TripWorkspace({ summary }: TripWorkspaceProps) {
           </div>
           {!canUseCover && trip.coverImage?.trim() && (
             <div className="lg:col-span-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-              We couldn't display your cover image because its host isn't permitted. A default image is shown instead.
+              We couldn&apos;t display your cover image because its host isn&apos;t permitted. A default image is shown instead.
             </div>
           )}
         </div>

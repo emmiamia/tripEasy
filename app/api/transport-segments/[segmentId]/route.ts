@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { transportSegmentSchema } from "@/lib/validation";
 
 interface Params {
-  params: { segmentId: string };
+  params: Promise<{ segmentId: string }>;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = transportSegmentSchema.partial().parse(json);
 
@@ -34,8 +35,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.transportSegment.delete({ where: { id: params.segmentId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -43,14 +43,14 @@ export const authConfig = {
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email as string }
         });
 
         if (!user?.hashedPassword) {
           return null;
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.hashedPassword);
+        const isValid = await bcrypt.compare(credentials.password as string, user.hashedPassword);
         if (!isValid) {
           return null;
         }

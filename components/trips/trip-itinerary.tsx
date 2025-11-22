@@ -50,9 +50,9 @@ const emptyDayDraft: DayDraft = {
   date: ""
 };
 
-const formatTimeInput = (value?: string | null) => {
+const formatTimeInput = (value?: string | Date | null) => {
   if (!value) return "";
-  const date = new Date(value);
+  const date = value instanceof Date ? value : new Date(value);
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
@@ -399,7 +399,7 @@ export function TripItinerary({ tripId, days }: TripItineraryProps) {
       setItineraryDays((prev: TripWithRelations["days"]) =>
         prev
           .map((day: TripDayEntity) =>
-            day.id === dayId ? { ...day, summary: updatedDay.summary, date: updatedDay.date } : day
+            day.id === dayId ? { ...day, summary: updatedDay.summary, date: new Date(updatedDay.date) } : day
           )
           .sort((a: TripDayEntity, b: TripDayEntity) => new Date(a.date).getTime() - new Date(b.date).getTime())
       );

@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { noteSchema } from "@/lib/validation";
 
 interface Params {
-  params: { noteId: string };
+  params: Promise<{ noteId: string }>;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = noteSchema.partial().parse(json);
     const note = await prisma.tripNote.update({
@@ -20,8 +21,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.tripNote.delete({ where: { id: params.noteId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

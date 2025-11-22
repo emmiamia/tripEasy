@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { expenseSchema } from "@/lib/validation";
 
 interface Params {
-  params: { expenseId: string };
+  params: Promise<{ expenseId: string }>;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = expenseSchema.partial().parse(json);
     const expense = await prisma.expense.update({
@@ -23,8 +24,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.expense.delete({ where: { id: params.expenseId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

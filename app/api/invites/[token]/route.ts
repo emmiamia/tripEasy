@@ -74,26 +74,24 @@ export async function POST(_request: Request, context: RouteContext) {
 
   const alreadyMember = invite.trip.members.some((member) => member.userId === session.user.id);
 
-  const membershipPromise = alreadyMember
-    ? Promise.resolve(null)
-    : prisma.tripMember.create({
+  await prisma.$transaction(async (tx) => {
+    if (!alreadyMember) {
+      await tx.tripMember.create({
         data: {
           tripId: invite.tripId,
           userId: session.user.id,
           role: invite.role
         }
       });
-
-  await prisma.$transaction([
-    membershipPromise,
-    prisma.tripInvite.update({
+    }
+    await tx.tripInvite.update({
       where: { id: invite.id },
       data: {
         status: "accepted",
         acceptedAt: new Date()
       }
-    })
-  ]);
+    });
+  });
 
   return NextResponse.json({ success: true, tripId: invite.tripId });
 }

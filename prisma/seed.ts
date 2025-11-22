@@ -1,10 +1,18 @@
-import { PrismaClient, TravelStyle, ActivityCategory, TransportType, ExpenseCategory } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { addDays, addHours, parseISO } from "date-fns";
 
 const prisma = new PrismaClient();
 
 async function main() {
   await prisma.trip.deleteMany();
+  await prisma.user.deleteMany();
+
+  const user = await prisma.user.create({
+    data: {
+      email: "seed@example.com",
+      name: "Seed User"
+    }
+  });
 
   const startDate = parseISO("2025-03-15");
 
@@ -14,11 +22,12 @@ async function main() {
       destination: "Tokyo, Kyoto & Osaka",
       startDate,
       endDate: addDays(startDate, 9),
-      travelStyle: TravelStyle.CULTURE,
+      travelStyle: "CULTURE",
       currency: "JPY",
       description: "Cherry blossom adventure through Japan's cultural capitals.",
       coverImage:
         "https://images.unsplash.com/photo-1549693578-d683be217e58?auto=format&fit=crop&w=1200&q=80",
+      createdById: user.id,
       companions: {
         create: [
           { name: "Alex Johnson", email: "alex@example.com" },
@@ -45,7 +54,7 @@ async function main() {
             amount: 1100,
             currency: "USD",
             date: addDays(startDate, -1),
-            category: ExpenseCategory.TRANSPORT,
+            category: "TRANSPORT",
             paidBy: "Alex"
           },
           {
@@ -53,7 +62,7 @@ async function main() {
             amount: 82000,
             currency: "JPY",
             date: addDays(startDate, 3),
-            category: ExpenseCategory.LODGING,
+            category: "LODGING",
             paidBy: "Priya"
           }
         ]
@@ -78,7 +87,7 @@ async function main() {
                 locationName: idx === 2 ? "Kyoto" : "Tokyo",
                 locationLat: idx === 2 ? 34.9671 : 35.6938,
                 locationLng: idx === 2 ? 135.7727 : 139.7035,
-                category: idx === 2 ? ActivityCategory.SIGHTSEEING : ActivityCategory.FOOD,
+                category: idx === 2 ? "SIGHTSEEING" : "FOOD",
                 notes: idx === 0 ? "Try Ichiran" : undefined
               },
               {
@@ -88,7 +97,7 @@ async function main() {
                 locationName: idx >= 4 ? "Osaka" : "Tokyo",
                 locationLat: idx >= 4 ? 34.6937 : 35.6762,
                 locationLng: idx >= 4 ? 135.5023 : 139.6503,
-                category: ActivityCategory.OTHER
+                category: "OTHER"
               }
             ]
           }
@@ -115,7 +124,7 @@ async function main() {
       segments: {
         create: [
           {
-            type: TransportType.FLIGHT,
+            type: "FLIGHT",
             carrier: "ANA",
             departureCity: "San Francisco",
             arrivalCity: "Tokyo",
@@ -124,7 +133,7 @@ async function main() {
             seat: "12A"
           },
           {
-            type: TransportType.TRAIN,
+            type: "TRAIN",
             carrier: "Shinkansen",
             departureCity: "Tokyo",
             arrivalCity: "Kyoto",

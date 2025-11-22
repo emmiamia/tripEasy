@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { lodgingSchema } from "@/lib/validation";
 
 interface Params {
-  params: { lodgingId: string };
+  params: Promise<{ lodgingId: string }>;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = lodgingSchema.partial().parse(json);
 
@@ -33,8 +34,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.lodging.delete({ where: { id: params.lodgingId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { activitySchema } from "@/lib/validation";
 
 interface Params {
-  params: { activityId: string };
+  params: Promise<{ activityId: string }>;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = activitySchema.partial().parse(json);
     const activity = await prisma.activity.update({
@@ -26,8 +27,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.activity.delete({ where: { id: params.activityId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

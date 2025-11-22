@@ -14,7 +14,6 @@ export default function TripsPage() {
         </div>
       </header>
       <Suspense fallback={<TripsTableSkeleton />}>
-        {/* @ts-expect-error Async Server Component */}
         <ResolvedTrips />
       </Suspense>
     </section>

@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { packingItemSchema } from "@/lib/validation";
 
 interface Params {
-  params: { packingItemId: string };
+  params: Promise<{ packingItemId: string }>;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = packingItemSchema.partial().parse(json);
     const item = await prisma.packingItem.update({
@@ -20,8 +21,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.packingItem.delete({ where: { id: params.packingItemId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

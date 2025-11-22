@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { companionSchema } from "@/lib/validation";
 
 interface Params {
-  params: { companionId: string };
+  params: Promise<{ companionId: string }>;
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = companionSchema.partial().parse(json);
 
@@ -16,7 +17,7 @@ export async function PATCH(request: Request, { params }: Params) {
       data: {
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.email !== undefined ? { email: data.email ?? null } : {}),
-        ...(data.status !== undefined ? { status: data.status ?? null } : {})
+        ...(data.status !== undefined && data.status !== null ? { status: data.status } : {})
       }
     });
 
@@ -30,8 +31,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.travelCompanion.delete({ where: { id: params.companionId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {

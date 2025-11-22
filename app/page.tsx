@@ -19,7 +19,6 @@ export default async function DashboardPage() {
       </header>
 
       <Suspense fallback={<TripDashboardSkeleton />}>
-        {/* @ts-expect-error Async Server Component */}
         <ResolvedDashboard promise={tripsPromise} />
       </Suspense>
     </section>

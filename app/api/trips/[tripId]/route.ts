@@ -4,10 +4,11 @@ import { tripSchema } from "@/lib/validation";
 import { parseISO } from "date-fns";
 
 interface Params {
-  params: { tripId: string };
+  params: Promise<{ tripId: string }>;
 }
 
-export async function GET(_request: Request, { params }: Params) {
+export async function GET(_request: Request, context: Params) {
+  const params = await context.params;
   const trip = await prisma.trip.findUnique({
     where: { id: params.tripId },
     include: {
@@ -29,8 +30,9 @@ export async function GET(_request: Request, { params }: Params) {
   return NextResponse.json(trip);
 }
 
-export async function PATCH(request: Request, { params }: Params) {
+export async function PATCH(request: Request, context: Params) {
   try {
+    const params = await context.params;
     const json = await request.json();
     const data = tripSchema.partial().parse(json);
 
@@ -57,8 +59,9 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_request: Request, { params }: Params) {
+export async function DELETE(_request: Request, context: Params) {
   try {
+    const params = await context.params;
     await prisma.trip.delete({ where: { id: params.tripId } });
     return NextResponse.json({ success: true });
   } catch (error: any) {
